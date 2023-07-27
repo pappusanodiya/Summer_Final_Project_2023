@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web-Based Window System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .window {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+        }
+        
+        .window .title-bar {
+            background-color: #cccccc;
+            height: 20px;
+            padding: 5px;
+            cursor: move;
+        }
+        
+        .window .title-bar .title {
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .window .title-bar .buttons {
+            display: inline-block;
+        }
+        
+        .window .content {
+            padding: 10px;
+        }
+        
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 1442px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #000000;
+            padding: 20px;
+            display: flex;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        
+        .taskbar .taskbar-button {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url (""); 
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        
+        .start-button {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .start-menu {
+            position: absolute;
+            bottom: 55px;
+            left: 10px;
+            width: 200px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            display: none;
+        }
+        
+        .start-menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .start-menu ul li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #000000;
+        }
+        
+        .start-menu ul li:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+    
+    <button onclick="createWindow()">Create Window</button>
+    
+    <div class="taskbar">
+        <div class="start-button" onclick="toggleStartMenu()">
+            <img src="C:\Users\sujee\Downloads\Windows_logo_-_2021.png" alt="Start" width="30" height="30">
+        </div>
+        <div class="start-menu">
+            <ul>
+                <li>Icon 1</li>
+                <li>Icon 2</li>
+                <li>Icon 3</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        var zIndexCounter = 1;
+
+        function createWindow() {
+            var windowDiv = document.createElement('div');
+            windowDiv.className = 'window';
+            windowDiv.style.left = Math.random() * 400 + 'px';
+            windowDiv.style.top = Math.random() * 400 + 'px';
+            windowDiv.style.zIndex = zIndexCounter++;
+            
+            var titleBar = document.createElement('div');
+            titleBar.className = 'title-bar';
+            
+            var title = document.createElement('span');
+            title.className = 'title';
+            title.innerHTML = 'Window ' + zIndexCounter;
+            
+            var buttons = document.createElement('div');
+            buttons.className = 'buttons';
+            
+            var minimizeButton = document.createElement('button');
+            minimizeButton.innerHTML = '-';
+            minimizeButton.onclick = function() {
+                windowDiv.style.display = 'none';
+            };
+            
+            var maximizeButton = document.createElement('button');
+            maximizeButton.innerHTML = '+';
+            maximizeButton.onclick = function() {
+                if (windowDiv.style.width === '100%' && windowDiv.style.height === '100%') {
+                    windowDiv.style.width = '300px';
+                    windowDiv.style.height = '200px';
+                } else {
+                    windowDiv.style.width = '100%';
+                    windowDiv.style.height = '100%';
+                }
+            };
+            
+            var closeButton = document.createElement('button');
+            closeButton.innerHTML = 'x';
+            closeButton.onclick = function() {
+                document.body.removeChild(windowDiv);
+                removeTaskbarButton(windowDiv);
+            };
+            
+            buttons.appendChild(minimizeButton);
+            buttons.appendChild(maximizeButton);
+            buttons.appendChild(closeButton);
+            
+            titleBar.appendChild(title);
+            titleBar.appendChild(buttons);
+            
+            var content = document.createElement('div');
+            content.className = 'content';
+            content.innerHTML = 'This is a window';
+            
+            windowDiv.appendChild(titleBar);
+            windowDiv.appendChild(content);
+            
+            document.body.appendChild(windowDiv);
+            
+            makeDraggable(windowDiv, titleBar);
+            createTaskbarButton(windowDiv);
+        }
+
+        function makeDraggable(element, handle) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            handle.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        
+        function createTaskbarButton(windowDiv) {
+            var taskbar = document.querySelector('.taskbar');
+            
+            var button = document.createElement('div');
+            button.className = 'taskbar-button';
+            button.innerHTML = 'Window ' + zIndexCounter;
+            button.onclick = function() {
+                windowDiv.style.display = 'block';
+                windowDiv.style.zIndex = zIndexCounter++;
+            };
+            
+            taskbar.appendChild(button);
+        }
+        
+        function removeTaskbarButton(windowDiv) {
+            var taskbar = document.querySelector('.taskbar');
+            
+            var buttons = taskbar.getElementsByClassName('taskbar-button');
+            for (var i = 0; i < buttons.length; i++) {
+                if (buttons[i].innerHTML === windowDiv.querySelector('.title').innerHTML) {
+                    taskbar.removeChild(buttons[i]);
+                    break;
+                }
+            }
+        }
+        
+        function toggleStartMenu() {
+            var startMenu = document.querySelector('.start-menu');
+            startMenu.style.display = (startMenu.style.display === 'none') ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
